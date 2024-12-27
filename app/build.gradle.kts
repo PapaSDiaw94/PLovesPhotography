@@ -77,7 +77,6 @@ dependencies {
     androidTestImplementation(libs.androidx.navigation.testing)
     implementation(libs.kotlinx.serialization.json)
 
-
     //COIL
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
@@ -85,6 +84,7 @@ dependencies {
     //MATERIAL
     implementation(libs.androidx.material)
 
-
+    //BOTTOM BAR ANIMATION
+    implementation(libs.animated.navigation.bar)
 
 }
