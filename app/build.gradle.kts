@@ -87,4 +87,8 @@ dependencies {
     //BOTTOM BAR ANIMATION
     implementation(libs.animated.navigation.bar)
 
+    //GOOGLE FONTS
+    implementation (libs.androidx.ui.text.google.fonts)
+
+
 }
