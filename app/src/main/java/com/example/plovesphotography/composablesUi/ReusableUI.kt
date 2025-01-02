@@ -1,10 +1,17 @@
 package com.example.plovesphotography.composablesUi
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +21,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -21,8 +36,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.example.plovesphotography.R
+import com.example.plovesphotography.ui.theme.Black
+import com.example.plovesphotography.ui.theme.DarkGray
 import com.example.plovesphotography.ui.theme.DarkSalmon
+import com.example.plovesphotography.ui.theme.GreenMint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -54,39 +73,46 @@ fun SplitFlapTextFastFlip(
     totalInitialFlips: Int = 10,
     sequentialFlipDuration: Int = 20,
     totalSequentialFlips: Int = 6,
-    overlapDuration: Int = 90
+    overlapDuration: Int = 90,
+    playAnimation: Boolean = true, // Controls whether animation should play
+    onAnimationEnd: () -> Unit = {} // Callback when animation finishes
 ) {
     val (normalizedStartText, normalizedEndText) = normalizeTextLength(startText, endText)
     val animatedText = remember { mutableStateOf(normalizedStartText) }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(normalizedEndText) {
-        scope.launch {
-            val currentText = animatedText.value.toCharArray()
+    LaunchedEffect(playAnimation) {
+        if (playAnimation) {
+            scope.launch {
+                val currentText = animatedText.value.toCharArray()
 
-            // Step 1: All letters flip simultaneously
-            for (flip in 1..totalInitialFlips) {
-                for (i in currentText.indices) {
-                    currentText[i] = getRandomCharacter()
-                }
-                animatedText.value = String(currentText)
-                delay(initialFlippingDuration.toLong())
-            }
-
-            // Step 2: Letters form sequentially from left to right
-            for (i in currentText.indices) {
-                launch {
-                    for (flip in 1..totalSequentialFlips) {
-                        currentText[i] = if (flip == totalSequentialFlips) {
-                            normalizedEndText[i]
-                        } else {
-                            getRandomCharacter()
-                        }
-                        animatedText.value = String(currentText)
-                        delay(sequentialFlipDuration.toLong())
+                // Step 1: All letters flip simultaneously
+                for (flip in 1..totalInitialFlips) {
+                    for (i in currentText.indices) {
+                        currentText[i] = getRandomCharacter()
                     }
+                    animatedText.value = String(currentText)
+                    delay(initialFlippingDuration.toLong())
                 }
-                delay(overlapDuration.toLong())
+
+                // Step 2: Letters form sequentially from left to right
+                for (i in currentText.indices) {
+                    launch {
+                        for (flip in 1..totalSequentialFlips) {
+                            currentText[i] = if (flip == totalSequentialFlips) {
+                                normalizedEndText[i]
+                            } else {
+                                getRandomCharacter()
+                            }
+                            animatedText.value = String(currentText)
+                            delay(sequentialFlipDuration.toLong())
+                        }
+                    }
+                    delay(overlapDuration.toLong())
+                }
+
+                // Notify that the animation has ended
+                onAnimationEnd()
             }
         }
     }
@@ -105,15 +131,59 @@ fun SplitFlapTextFastFlip(
             ) {
                 Text(
                     text = char.toString(),
-                    color = DarkSalmon,
+                    color = GreenMint,
                     style = TextStyle(
                         fontFamily = FontFamily(Font(R.font.gugi)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
+                        fontSize = 25.sp,
                         textAlign = TextAlign.Center
                     )
                 )
             }
         }
+    }
+}
+
+@Composable
+fun ReusableCard(
+    title: String,
+    imageUrl: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(1f) // Adjust for a card-like shape
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, Black, RoundedCornerShape(16.dp))
+            .clickable(enabled = onClick != null) { onClick?.invoke() }
+    ) {
+        // Background Image with grayscale, blur, and darkening effects
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(1.dp) // Slight blur effect
+                .graphicsLayer(alpha = 1f), // Darken the image
+            contentScale = ContentScale.Crop,
+            colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
+                setToSaturation(1f) // Apply grayscale
+            })
+        )
+
+        // Title
+        Text(
+            text = title,
+            style = TextStyle(
+                fontFamily = FontFamily(Font(R.font.monomaniac1)),
+                fontWeight = FontWeight.ExtraLight,
+                fontSize = 25.sp,
+                color = Color.White
+            ),
+            modifier = Modifier.align(Alignment.Center),
+            textAlign = TextAlign.Center
+        )
     }
 }

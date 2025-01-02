@@ -26,10 +26,10 @@ import com.example.plovesphotography.screens.AboutScreen
 import com.example.plovesphotography.screens.CategoryScreen
 import com.example.plovesphotography.screens.FavoritesScreen
 import com.example.plovesphotography.screens.HomeScreen
-import com.example.plovesphotography.ui.theme.DarkGray
-import com.example.plovesphotography.ui.theme.DarkSalmon
+import com.example.plovesphotography.ui.theme.Black
+import com.example.plovesphotography.ui.theme.GreenMint
 import com.example.plovesphotography.ui.theme.PLovesPhotographyTheme
-import com.example.plovesphotography.ui.theme.Valspar
+import com.example.plovesphotography.ui.theme.White
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Teleport
 import com.exyte.animatednavbar.animation.indendshape.Height
@@ -87,11 +87,11 @@ fun AnimatedNavigationBar(
 
         AnimatedNavigationBar(
             modifier = Modifier
-                .height(85.dp),
+                .height(80.dp),
             selectedIndex = selectedIndex,
-            barColor = Valspar, // Use a custom color
-            ballColor = DarkSalmon,
-            cornerRadius = shapeCornerRadius(25.dp),
+            barColor = Black, // Use a custom color
+            ballColor = GreenMint,
+            cornerRadius = shapeCornerRadius(0.dp),
             ballAnimation = Teleport(tween(500, easing = LinearEasing)),
             indentAnimation = Height(
                 indentWidth = 56.dp,
@@ -115,7 +115,7 @@ fun AnimatedNavigationBar(
                     },
                     icon = item.icon,
                     backgroundIcon = item.icon,
-                    outlineColor = DarkGray,
+                    outlineColor = White,
 
                 )
             }

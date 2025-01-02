@@ -16,4 +16,8 @@ val DarkGray = Color(0xFF342E25)
 val Champagne = Color(0xFFF0D8B6)
 val Valspar = Color(0xFFE7D8C4)
 
+val Black = Color(0xFF000000)
+val White = Color(0xFFFFFFFF)
+val GreenMint= Color(0xFF52CE86)
+val GreyMint=Color(0xFF648E76)
 
