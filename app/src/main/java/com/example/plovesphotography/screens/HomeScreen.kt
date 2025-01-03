@@ -23,11 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,88 +40,91 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import coil3.compose.rememberAsyncImagePainter
 import com.example.plovesphotography.R
+import com.example.plovesphotography.composablesUi.BottomSheetContent
 import com.example.plovesphotography.composablesUi.ReusableCard
-
 import com.example.plovesphotography.composablesUi.SplitFlapTextFastFlip
 import com.example.plovesphotography.ui.theme.Black
-import com.example.plovesphotography.ui.theme.DarkGray
-import com.example.plovesphotography.ui.theme.DarkSalmon
 import com.example.plovesphotography.ui.theme.GreenMint
-import com.example.plovesphotography.ui.theme.GreyMint
-import com.example.plovesphotography.ui.theme.Valspar
 import com.example.plovesphotography.ui.theme.White
+import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen() {
-    // State to control if animation should play
+fun HomeScreen(onShowBottomSheet: (@Composable () -> Unit) -> Unit) {
+
     val playAnimation = remember { mutableStateOf(true) }
 
+
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 5.dp),
-    ) {
-        // Add other sections or headers as needed
-        item {
-            // Title with padding
-            SplitFlapTextFastFlip(
-                startText = "HOMEPAGE", // Japanese for Homepage
-                endText = "HOMEPAGE",   // Final text
-                modifier = Modifier.padding(20.dp), // Space below the title
-                playAnimation = playAnimation.value, // Trigger animation only once
-                onAnimationEnd = { playAnimation.value = false } // Stop animation after it plays
-            )
-        }
-        // Add the "What's New" section
-        item {
-            Box(
-                modifier = Modifier
-                    .padding(5.dp)
-            ) {
-                PictureOfTheDayCard(
-                    imageUrl = "https://picsum.photos/id/1084/536/354?grayscale",
-                    date = "12/12/2022",
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 5.dp),
+        ) {
+            // SplitFlapText Section
+            item {
+                SplitFlapTextFastFlip(
+                    startText = "HOMEPAGE",
+                    endText = "HOMEPAGE",
+                    modifier = Modifier.padding(20.dp),
+                    playAnimation = playAnimation.value,
+                    onAnimationEnd = { playAnimation.value = false }
                 )
             }
-        }
-        // Add any additional sections below
-        item {
-            Box(
-                modifier = Modifier
-                    .padding(start = 5.dp, end = 20.dp)
-            ) {
-                ImageInfoWithArrow(
-                    title = "Photo title #23",
-                    author = "author",
-                    onArrowClick = { /* Handle arrow click */ }
-                )
+
+            // Picture of the Day Section
+            item {
+                Box(
+                    modifier = Modifier.padding(5.dp)
+                ) {
+                    PictureOfTheDayCard(
+                        imageUrl = "https://picsum.photos/id/1084/536/354?grayscale",
+                        date = "12/12/2022",
+                    )
+                }
             }
-        }
-        // Add any additional sections below
-        item {
-            Box(
-                modifier = Modifier
-                    .padding(start = 20.dp, bottom = 5.dp)
-            ) {
-                Subtitle("WHAT'S NEW?")
+
+            // Image Info Section
+            item {
+                Box(
+                    modifier = Modifier.padding(start = 5.dp, end = 20.dp)
+                ) {
+                    ImageInfoWithArrow(
+                        title = "Photo title #23",
+                        author = "Author",
+                        onArrowClick = { /* Handle arrow click */ }
+                    )
+                }
             }
-        }
-        // Add any additional sections below
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp) // Constrain height of the grid
-                    .padding(horizontal = 5.dp)
-            ) {
-                WhatsNewSection(cards)
+
+            // Subtitle Section
+            item {
+                Box(
+                    modifier = Modifier.padding(start = 20.dp, bottom = 5.dp)
+                ) {
+                    Subtitle("WHAT'S NEW?")
+                }
+            }
+
+            // What's New Section
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp)
+                        .padding(horizontal = 5.dp)
+                ) {
+                    WhatsNewSection(cards = cards) { clickedTitle ->
+                        onShowBottomSheet {
+                            BottomSheetContent(title = clickedTitle)
+                        }
+                    }
+                }
             }
         }
     }
-}
 
 @Composable
 fun PictureOfTheDayCard(
@@ -253,24 +260,27 @@ fun Subtitle(subtitle:String){
 }
 
 @Composable
-fun WhatsNewSection(cards: List<Pair<String, String>>) {
+fun WhatsNewSection(
+    cards: List<Pair<String, String>>,
+    onCardClick: (String) -> Unit
+) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), // Two cards per row
+        columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(cards.size) { index -> // Use size of the list and iterate by index
-            val (title, imageUrl) = cards[index] // Access the item by index
+        items(cards.size) { index ->
+            val (title, imageUrl) = cards[index]
             ReusableCard(
                 title = title,
                 imageUrl = imageUrl,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onCardClick(title) } // Pass clicked card's title back to parent
             )
         }
     }
 }
-
 
 val cards = listOf(
     "Visit at the Artech House" to "https://picsum.photos/536/354",
